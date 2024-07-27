@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sample Form</title>
+  <style>
+    #threejs-canvas {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 200px;
+      height: 200px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <form method="POST">
+      <label for="sample_type">Sample type:</label>
+      <select id="sample_type" name="sample_type" onchange="this.form.submit()" >
+        <option value="Clusters" {% if sample_type == 'Clusters' %}selected{% endif %}>Clusters</option>
+        <option value="Random" {% if sample_type == 'Random' %}selected{% endif %}>Random</option>
+      </select>
+
+      {% if sample_type == 'Clusters' %}
+        <div>
+          <label for="packing_factor">Packing factor:</label>
+          <input type="number" step="0.001" id="packing_factor" name="packing_factor" min="0" max="1" value="{{ form_data.packing_factor }}" required>
+        </div>
+        <div>
+          <label for="no_cluster">No. cluster:</label>
+          <input type="number" id="no_cluster" name="no_cluster" min="1" max="30" value="{{ form_data.no_cluster }}" required>
+        </div>
+        <div>
+          <label for="no_particle_per_cluster">No. Particle per cluster:</label>
+          <input type="number" id="no_particle_per_cluster" name="no_particle_per_cluster" min="1" max="50" value="{{ form_data.no_particle_per_cluster }}" required>
+        </div>
+      {% elif sample_type == 'Random' %}
+        <div>
+          <label for="no_particle">No. Particle:</label>
+          <input type="number" id="no_particle" name="no_particle" min="11" max="1500" value="{{ form_data.no_particle }}" required>
+        </div>
+      {% endif %}
+
+      <div>
+        <h3>Environment variables</h3>
+        <div>
+          <label for="name">Name (optional):</label>
+          <input type="text" id="name" name="name">
+        </div>
+        <label for="temperature">Temperature:</label>
+        <input type="number" step="0.1" id="temperature" name="temperature" min="20" max="550" value="{{ form_data.temperature }}" required>
+      </div>
+      <div>
+        <label for="particle_size">Particle size:</label>
+        <input type="number" step="0.1" id="particle_size" name="particle_size" min="10" max="150" value="{{ form_data.particle_size }}" required>
+      </div>
+      <div>
+        <label for="box_size">Box size (comma-separated) (nm):</label>
+        <input type="text" id="box_size" name="box_size" pattern="^(\d+(\.\d+)?,){2}\d+(\.\d+)?$" value="{{ form_data.box_size }}" required>
+      </div>
+
+      <div>
+        <button type="submit">Generate</button>
+      </div>
+    </form>
+
+    {% if form_data %}
+    <h3>Form Data:</h3>
+    <pre>{{ form_data }}</pre>
+    {% endif %}
+
+  <canvas id="threejs-canvas"></canvas>
+
+  <script src="three.min.js"></script>
+  <script>
+    document.getElementById('sample_type').addEventListener('change', function() {
+      var clusterOptions = document.getElementById('cluster-options');
+      var randomOptions = document.getElementById('random-options');
+      if (this.value == 'Clusters') {
+        clusterOptions.style.display = 'block';
+        randomOptions.style.display = 'none';
+      } else {
+        clusterOptions.style.display = 'none';
+        randomOptions.style.display = 'block';
+      }
+    });
+
+    // Three.js initialization
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    var renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('threejs-canvas') });
+    renderer.setSize(200, 200);
+
+    // Create a 3D object (cube)
+    var geometry = new THREE.BoxGeometry();
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    var cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
+
+    camera.position.z = 5;
+
+    var animate = function () {
+      requestAnimationFrame(animate);
+
+      cube.rotation.x += 0.01;
+      cube.rotation.y += 0.01;
+
+      renderer.render(scene, camera);
+    };
+
+    animate();
+  </script>
+</body>
+</html>
